@@ -70,6 +70,7 @@ func Encode(claims map[string]interface{}) (string, error) {
 }
 
 func Decode(tokenString string) (map[string]interface{}, error) {
+	var final_claims map[string]interface{}
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -79,6 +80,15 @@ func Decode(tokenString string) (map[string]interface{}, error) {
 	})
 
 	claims, _ := token.Claims.(jwt.MapClaims)
-	final_claims := map[string]interface{}(claims)
+
+	final_claims = nil
+	if token.Valid {
+		err = nil
+		final_claims = map[string]interface{}(claims)
+	} else {
+		err = fmt.Errorf("Not valid token")
+
+	}
 	return final_claims, err
 }
+
